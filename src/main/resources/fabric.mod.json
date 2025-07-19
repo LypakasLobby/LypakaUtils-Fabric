@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "lypakautils",
+  "version": "${version}",
+  "name": "LypakaUtils",
+  "description": "",
+  "authors": [],
+  "contact": {
+    "repo": "https://github.com/ryan9/LypakaUtils"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/lypakautils/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "client": [
+      "com.lypaka.lypakautils.client.LypakaUtilsClient"
+    ],
+    "main": [
+      "com.lypaka.lypakautils.LypakaUtils"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

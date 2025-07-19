@@ -1,0 +1,98 @@
+plugins {
+    id 'fabric-loom' version '1.9.2'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url 'https://jitpack.io' }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+    mavenCentral()
+    maven { url = 'https://maven.impactdev.net/repository/development/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:1.21.1+build.3:v2"
+    //mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation(include('me.lucko:fabric-permissions-api:0.3.1'))
+    modImplementation files("D:/GitHub/LIBRARIES/Impactor-Fabric-5.3.3+1.21.1.jar")
+    implementation 'net.kyori:adventure-api:4.14.0'
+
+    shadow group: 'ninja.leaping.configurate', name: 'configurate-hocon', version: '3.3'
+    shadow group: 'ninja.leaping.configurate', name: 'configurate-core', version: '3.3'
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "loader_version", project.loader_version
+    filteringCharset "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version,
+                "minecraft_version": project.minecraft_version,
+                "loader_version": project.loader_version
+    }
+}
+
+def targetJavaVersion = 21
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release.set(targetJavaVersion)
+    }
+}
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    //withSourcesJar()
+}
+
+jar {
+    dependsOn shadowJar
+    archiveClassifier.set("")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // ✅ also here
+    from {
+        zipTree(shadowJar.archiveFile.get())
+    }
+}
+
+shadowJar {
+    archiveClassifier.set("shade")
+    configurations = [project.configurations.shadow]
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // ✅ fixes the error
+
+    relocate 'com.google.common', 'com.lypaka.shadow.google.common'
+    relocate 'ninja.leaping.configurate', 'com.lypaka.shadow.configurate'
+    relocate 'com.typesafe.config', 'com.lypaka.shadow.typesafeconfig'
+}
+
+remapJar {
+    dependsOn shadowJar
+    input.set(shadowJar.archiveFile)
+    archiveClassifier.set("dev") // produces LypakaUtils-xxx-dev.jar
+    addNestedDependencies.set(true)
+}
