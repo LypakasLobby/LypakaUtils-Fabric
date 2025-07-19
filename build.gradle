@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.9.2'
+    id 'fabric-loom' version '1.10-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'maven-publish'
 }
@@ -12,24 +12,27 @@ base {
 }
 
 repositories {
-    maven { url 'https://jitpack.io' }
-    maven {
-        name = "Modrinth"
-        url = "https://api.modrinth.com/maven"
-    }
     mavenCentral()
+    gradlePluginPortal()
+
+    maven { url 'https://jitpack.io' }
+    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://api.modrinth.com/maven"}
     maven { url = 'https://maven.impactdev.net/repository/development/' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:1.21.1+build.3:v2"
+    minecraft ("com.mojang:minecraft:${project.minecraft_version}")
+    mappings ("net.fabricmc:yarn:1.21.1+build.3:v2")
     //mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation(include('me.lucko:fabric-permissions-api:0.3.1'))
-    modImplementation files("D:/GitHub/LIBRARIES/Impactor-Fabric-5.3.3+1.21.1.jar")
-    implementation 'net.kyori:adventure-api:4.14.0'
+    modImplementation ("net.fabricmc:fabric-loader:${project.loader_version}")
+    modImplementation ("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+    modImplementation (include('me.lucko:fabric-permissions-api:0.3.1'))
+    implementation ("net.impactdev.impactor.api:economy:5.3.3")
+    implementation ("net.kyori:adventure-api:4.17.0")
+    api("net.kyori:adventure-text-serializer-gson:4.17.0")
+    api("net.kyori:adventure-text-minimessage:4.17.0")
 
     shadow group: 'ninja.leaping.configurate', name: 'configurate-hocon', version: '3.3'
     shadow group: 'ninja.leaping.configurate', name: 'configurate-core', version: '3.3'
